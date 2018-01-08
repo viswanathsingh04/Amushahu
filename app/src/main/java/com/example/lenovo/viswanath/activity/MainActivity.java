@@ -14,6 +14,7 @@ import com.example.lenovo.viswanath.adapter.ShowData;
 import com.example.lenovo.viswanath.inter.ApiInterface;
 import com.example.lenovo.viswanath.model.Data;
 import com.example.lenovo.viswanath.model.Status;
+import com.example.lenovo.viswanath.utility.DBHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +34,8 @@ public class MainActivity extends AppCompatActivity {
     final public static Integer STATUS_ = 0;
     public static final MediaType MEDIA_TYPE = MediaType.parse("application/json");
     ShowData showData;
-    public static String header = "{\\\"user_id\\\":\\\"428\\\",\\\"url\\\":\\\"https://shelllogic.isteer.co/restphp/lead/fetchDSRLeads\\\",\\\"session_id\\\":\\\"1btj7svbktoj49uvvoit4hvse1\\\"}";
+    DBHelper db_obj;
+    List<Data> dbdata = new ArrayList<>();
     public static String att = "{\"sector\":\"all\",\"lead_status\":\"all\",\"opportunity_type\":\"all\"}";
 
     @Override
@@ -41,13 +43,14 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         data = new ArrayList<>();
+        db_obj = new DBHelper(MainActivity.this);
         LoadData();
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
         final RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
-        showData = new ShowData(MainActivity.this, data);
+        dbdata = db_obj.GetListObj();
+        showData = new ShowData(MainActivity.this, dbdata);
         recyclerView.setAdapter(showData);
-
     }
 
 
@@ -77,7 +80,10 @@ public class MainActivity extends AppCompatActivity {
                             List<Data> sampleData = fetchResults(response);
                             Log.d("Entered List", "proceeded");
                             if (sampleData != null && sampleData.size() > 0) {
-                                data.addAll(sampleData);
+                                for (Data ghg : sampleData) {
+                                    data.add(ghg);
+                                    db_obj.insert(ghg.getId(),ghg.getRegion_name(),ghg.getCluster_name(),ghg.getDistributor_name());
+                                }
                                 showData.notifyDataSetChanged();
                             }
                             System.out.println("ArraySize" + data.size());
